@@ -21,6 +21,8 @@ object Exceptions extends App {
 //	val array = Array.ofDim(Int.MaxValue)	// make an array of dimension of:
 
 //	throw new StackOverflowError("RIP")
+//	def infinite: Int = 1 + infinite
+//	val noLimit = infinite
 	
 
 	class OverflowException extends Exception
@@ -30,18 +32,29 @@ object Exceptions extends App {
 	class PocketCalculator {
 
 		def add(x: Int, y: Int): Int = {
-			if ((x + y) >= Int.MaxValue) throw new OverflowException
-			else x + y
+			// if ((x + y) >= Int.MaxValue) throw new OverflowException
+			// can't compare (x + y) with MaxValue (as for x+y > MaxValue is always false)
+			// but if you overflow it, it suddenly becomes negative, hence:
+			val result = x + y
+			if (x > 0 && y > 0 && result < 0) throw new OverflowException
+			else if (x < 0 && y < 0 && result > 0) throw new UnderflowException
+			else result
 		}
 
 		def subtract(x: Int, y: Int): Int = {
-			if ((x - y) <= Int.MinValue) throw new UnderflowException
-			else x - y
+			val result = x - y
+			if (x > 0 && y < 0 && result < 0) throw new OverflowException
+			else if (x < 0 && y > 0 && result > 0) throw new UnderflowException
+			else result
 		}
 
 		def multiply(x: Int, y: Int): Int = {
-			if ((x * y) >= Int.MaxValue) throw new OverflowException
-			else x * y
+			val result = x * y
+			if (x > 0 && y > 0 && result < 0) throw new OverflowException
+			else if (x > 0 && y < 0 && result > 0) throw new UnderflowException
+			else if (x > 0 && y < 0 && result > 0) throw new UnderflowException
+			else if (x < 0 && y > 0 && result > 0) throw new UnderflowException
+			else result
 		}
 
 		def divide(x: Int, y: Int): Int = {
@@ -51,6 +64,6 @@ object Exceptions extends App {
 
 	}
 	val calc = new PocketCalculator
-	println(calc.subtract(-10,Int.MaxValue))
-
+//	println(calc.subtract(-10,Int.MinValue))
+	println(calc.divide(4,0))
 }
