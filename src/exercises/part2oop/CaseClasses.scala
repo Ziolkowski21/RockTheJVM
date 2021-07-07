@@ -14,9 +14,9 @@ abstract class MyCaseList[+A] {
 	def printElementsCase: String
 	def toStringCase: String = "[" + printElementsCase + "]"
 
-	def map[B](transformer: MyTransformerCase[A,B]): MyCaseList[B]
-	def flatMap[B](transformer: MyTransformerCase[A,MyCaseList[B]]): MyCaseList[B]
-	def filter(predicate: MyPredicateCase[A]): MyCaseList[A]
+	def map[B](transformer: A => B): MyCaseList[B]
+	def flatMap[B](transformer: A =>   MyCaseList[B]): MyList[B]
+	def filter(predicate: A => Boolean): MyCaseList[A]
 
 	// concatanation
 	def ++[B >: A](list: MyCaseList[B]): MyCaseList[B]
@@ -30,9 +30,9 @@ case object EmptyCase extends MyCaseList[Nothing] {
 	def addCase[B >: Nothing](element: B): MyCaseList[B] = new ConsCase(element, EmptyCase)
 	def printElementsCase: String = ""
 
-	def map[B](transformer: MyTransformerCase[Nothing,B]): MyCaseList[B] = EmptyCase
-	def flatMap[B](transformer: MyTransformerCase[Nothing, MyCaseList[B]]): MyCaseList[B] = EmptyCase
-	def filter(predicate: MyPredicateCase[Nothing]): MyCaseList[Nothing] = EmptyCase
+	def map[B](transformer: Nothing => B): MyCaseList[B] = EmptyCase
+	def flatMap[B](transformer: Nothing => MyCaseList[B]): MyCaseList[B] = EmptyCase
+	def filter(predicate: Nothing => Boolean: MyCaseList[Nothing] = EmptyCase
 
 	def ++[B >: Nothing](list: MyCaseList[B]): MyCaseList[B] = list
 }
@@ -47,30 +47,20 @@ case class ConsCase[+A](h: A, t: MyCaseList[A]) extends MyCaseList[A] {
 		else h + " " + t.printElementsCase
 
 
-	def filter(predicate: MyPredicateCase[A]): MyCaseList[A] =
-		if (predicate.test(h)) new ConsCase(h,t.filter(predicate))
+	def filter(predicate: A => Boolean): MyCaseList[A] =
+		if (predicate(h)) new ConsCase(h,t.filter(predicate))
 		else t.filter(predicate)
 
 
-	def map[B](transformer: MyTransformerCase[A,B]): MyCaseList[B] = // if it's non empty so is result
-		new ConsCase(transformer.transform(h), t.map(transformer))
+	def map[B](transformer: A => B): MyCaseList[B] = // if it's non empty so is result
+		new ConsCase(transformer(h), t.map(transformer))
 
 	def ++[B >: A](list: MyCaseList[B]): MyCaseList[B] = new ConsCase(h, t ++ list)
 
 
-	def flatMap[B](transformer: MyTransformerCase[A,MyCaseList[B]]): MyCaseList[B] =
-		transformer.transform(h) ++ t.flatMap(transformer)
+	def flatMap[B](transformer: A => MyCaseList[B]): MyCaseList[B] =
+		transformer(h) ++ t.flatMap(transformer)
 }
-
-trait MyPredicateCase[-T] {
-	def test(elem: T): Boolean
-}
-
-trait MyTransformerCase[-A, B] {
-	def transform(elem: A): B
-}
-
-
 
 object ListTestCase extends App {
 	val listOfIntegers: MyCaseList[Int] = new ConsCase(1, new ConsCase(2, new ConsCase(3, EmptyCase)))
@@ -81,17 +71,17 @@ object ListTestCase extends App {
 	println(listOfIntegers.toStringCase)
 	println(listOfStrings.toStringCase)
 
-	println(listOfIntegers.map(new MyTransformerCase[Int, Int] {  // anonymous class
-		override def transform(elem: Int): Int = elem * 2
+	println(listOfIntegers.map(new Function1[Int, Int] {  // anonymous class
+		override def apply(elem: Int): Int = elem * 2
 	}).toStringCase)
 
-	println(listOfIntegers.filter(new MyPredicateCase[Int] {
-		override def test(elem: Int): Boolean = elem % 2 == 0
+	println(listOfIntegers.filter(new Function1[Int, Boolean] {
+		override def apply(elem: Int): Boolean = elem % 2 == 0
 	}).toStringCase)
 
 	println((listOfIntegers ++ anotherListOfIntegers).toStringCase)
-	println(listOfIntegers.flatMap(new MyTransformerCase[Int, MyCaseList[Int]] {
-		override def transform(elem: Int): MyCaseList[Int] = new ConsCase(elem, new ConsCase(elem + 1, EmptyCase))
+	println(listOfIntegers.flatMap(new Function1[Int, MyCaseList[Int]] {
+		override def apply(elem: Int): MyCaseList[Int] = new ConsCase(elem, new ConsCase(elem + 1, EmptyCase))
 	}).toStringCase)
 
 	println(listOfIntegers == cloneListOfIntegers)	// returns true due to being case
