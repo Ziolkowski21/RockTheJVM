@@ -15,7 +15,7 @@ abstract class MyCaseList[+A] {
 	def toStringCase: String = "[" + printElementsCase + "]"
 
 	def map[B](transformer: A => B): MyCaseList[B]
-	def flatMap[B](transformer: A =>   MyCaseList[B]): MyList[B]
+	def flatMap[B](transformer: A =>   MyCaseList[B]): MyCaseList[B]
 	def filter(predicate: A => Boolean): MyCaseList[A]
 
 	// concatanation
@@ -32,7 +32,7 @@ case object EmptyCase extends MyCaseList[Nothing] {
 
 	def map[B](transformer: Nothing => B): MyCaseList[B] = EmptyCase
 	def flatMap[B](transformer: Nothing => MyCaseList[B]): MyCaseList[B] = EmptyCase
-	def filter(predicate: Nothing => Boolean: MyCaseList[Nothing] = EmptyCase
+	def filter(predicate: Nothing => Boolean): MyCaseList[Nothing] = EmptyCase
 
 	def ++[B >: Nothing](list: MyCaseList[B]): MyCaseList[B] = list
 }
@@ -82,7 +82,7 @@ object ListTestCase extends App {
 	println((listOfIntegers ++ anotherListOfIntegers).toStringCase)
 	println(listOfIntegers.flatMap(new Function1[Int, MyCaseList[Int]] {
 		override def apply(elem: Int): MyCaseList[Int] = new ConsCase(elem, new ConsCase(elem + 1, EmptyCase))
-	}).toStringCase)
+	}).toString)
 
 	println(listOfIntegers == cloneListOfIntegers)	// returns true due to being case
 }
